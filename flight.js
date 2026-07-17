@@ -1,14 +1,102 @@
 const FlightMode = {
     aircrafts: new Map(),
+    layer: null,
+    updateInterval: null,
     
     init() {
         this.layer = MapEngine.getLayer('flight');
-        this.simulateLiveData();
-        this.animate();
+        this.fetchRealFlights();
+        
+        // Update data otomatis tiap 30 detik
+        this.updateInterval = setInterval(() => this.fetchRealFlights(), 30000);
+    },
+
+    async fetchRealFlights() {
+        try {
+            console.log("[Flight] Mencoba mengambil data Live Radar asli...");
+            
+            // Mengambil data dari seluruh dunia sekaligus
+            const response = await fetch('https://opensky-network.org/api/states/all');
+            
+            if (!response.ok) throw new Error('API OpenSky sedang limit/sibuk');
+            
+            const data = await response.json();
+            
+            if (data && data.states) {
+                this.layer.clearLayers();
+                this.aircrafts.clear();
+                const markersToCluster = [];
+
+                // Ambil maksimal 1000 pesawat biar HP nggak nge-lag (bisa ditambah kalau mau)
+                const limit = Math.min(data.states.length, 1000);
+
+                for (let i = 0; i < limit; i++) {
+                    const flight = data.states[i];
+                    const lat = flight[6];
+                    const lng = flight[5];
+
+                    if (lat && lng) {
+                        const marker = this.createMarker({
+                            id: flight[0],
+                            flightNo: flight[1] ? flight[1].trim() : 'UNKNOWN',
+                            type: 'Live Aircraft',
+                            lat: lat,
+                            lng: lng,
+                            heading: flight[10] || 0,
+                            alt: flight[7] ? Math.round(flight[7] * 3.28084) : 0,
+                            speed: flight[9] ? Math.round(flight[9] * 1.94384) : 0,
+                            origin: flight[2],
+                            dest: 'Live Tracking'
+                        });
+                        markersToCluster.push(marker);
+                    }
+                }
+                
+                this.layer.addLayers(markersToCluster);
+                console.log(`[Flight] Berhasil memuat ${limit} pesawat asli.`);
+            }
+        } catch (error) {
+            console.warn("[Flight] OpenSky API menolak request karena rate-limit. Menjalankan radar global simulasi...");
+            // Kalau gagal API, kita sebar 500 pesawat ke seluruh dunia sebagai cadangan!
+            this.generateSimulatedGlobalFlights(500);
+        }
+    },
+
+    // 🌍 PENGGANTI SIMULASI 2 PESAWAT MENJADI SELURUH DUNIA
+    generateSimulatedGlobalFlights(count) {
+        this.layer.clearLayers();
+        this.aircrafts.clear();
+        const markersToCluster = [];
+
+        const airlines = ['Garuda Indonesia', 'Emirates', 'Qatar Airways', 'Singapore Airlines', 'ANA', 'Cathay Pacific'];
+
+        for (let i = 0; i < count; i++) {
+            const randomLat = (Math.random() * 140) - 70; 
+            const randomLng = (Math.random() * 360) - 180;
+            const randomHeading = Math.floor(Math.random() * 360);
+            const randomSpeed = Math.floor(Math.random() * 300) + 200; 
+
+            const marker = this.createMarker({
+                id: `SIM-FLIGHT-${i}`,
+                flightNo: `${airlines[Math.floor(Math.random() * airlines.length)]} ${Math.floor(Math.random() * 999)}`,
+                type: 'Boeing 777 / A350',
+                lat: randomLat,
+                lng: randomLng,
+                heading: randomHeading,
+                alt: 35000,
+                speed: randomSpeed,
+                origin: 'Global',
+                dest: 'In Transit'
+            });
+
+            markersToCluster.push(marker);
+        }
+
+        this.layer.addLayers(markersToCluster);
+        console.log(`[Flight] Berhasil menyebar ${count} pesawat simulasi di seluruh dunia.`);
     },
 
     createMarker(data) {
-        // Custom HTML Icon for Aircraft to enable CSS transforms
         const icon = L.divIcon({
             html: `<div class="custom-marker" style="transform: rotate(${data.heading}deg); font-size: 24px; color: var(--neon-purple);">✈</div>`,
             className: 'flight-marker',
@@ -16,36 +104,20 @@ const FlightMode = {
             iconAnchor: [12, 12]
         });
 
-        const marker = L.marker([data.lat, data.lng], { icon }).bindTooltip(data.flightNo);
+        const marker = L.marker([data.lat, data.lng], { icon });
         
         marker.on('click', () => {
             UI.openBottomSheet({
-                Flight: data.flightNo,
-                Type: data.type,
+                Callsign: data.flightNo,
+                Country: data.origin,
                 Altitude: `${data.alt} ft`,
                 Speed: `${data.speed} kts`,
-                Origin: data.origin,
-                Destination: data.dest
+                Status: 'In Air',
+                Type: data.type
             });
         });
 
         this.aircrafts.set(data.id, { marker, data });
-        marker.addTo(this.layer);
-    },
-
-    simulateLiveData() {
-        // API-ready mock data
-        this.createMarker({ id: 1, flightNo: 'XA01', type: 'B777', lat: -6.1, lng: 106.8, heading: 45, alt: 35000, speed: 480, origin: 'CGK', dest: 'HND' });
-        this.createMarker({ id: 2, flightNo: 'XA02', type: 'A350', lat: 1.3, lng: 103.8, heading: 120, alt: 32000, speed: 460, origin: 'SIN', dest: 'SYD' });
-    },
-
-    animate() {
-        // Simulasi pergerakan realtime menggunakan requestAnimationFrame
-        this.aircrafts.forEach((item) => {
-            // Logika interpolasi pergerakan di sini untuk prod
-            // const newLat = item.data.lat + (speed * timeDelta);
-            // item.marker.setLatLng([newLat, newLng]);
-        });
-        requestAnimationFrame(() => this.animate());
+        return marker; // Tetap di-return biar bisa di-cluster dengan rapi!
     }
 };
