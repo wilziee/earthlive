@@ -23,21 +23,13 @@ const MapEngine = {
 
         // Setup Layer Group per mode
         this.layers = {
-            // LAYER PESAWAT (Sudah diubah ke Cluster agar fungsi addLayers() bisa berjalan)
+            // LAYER PESAWAT (Menggunakan Cluster)
             flight: L.markerClusterGroup({
                 maxClusterRadius: 45,
                 disableClusteringAtZoom: 11, 
                 spiderfyOnMaxZoom: true,
                 showCoverageOnHover: false
             }).addTo(this.map),
-            
-            // LAYER KAPAL
-            ship: L.markerClusterGroup({
-                maxClusterRadius: 55,       
-                disableClusteringAtZoom: 12, 
-                spiderfyOnMaxZoom: true,     
-                showCoverageOnHover: false   
-            }),
             
             // LAYER CUACA
             weather: L.layerGroup()

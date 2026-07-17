@@ -8,9 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // 2. Initialize Map Engine
     MapEngine.init();
 
-    // 3. Initialize Modes (Lazy setup approach)
+    // 3. Initialize Modes (ShipMode dihapus)
     FlightMode.init();
-    ShipMode.init();
     WeatherMode.init();
 
     // 4. Register PWA Service Worker
@@ -24,14 +23,5 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 5. Setup Web Worker untuk Data Processing (Arsitektur siap pakai)
-    /* 
-    const dataWorker = new Worker('worker.js');
-    dataWorker.onmessage = function(e) {
-        // Update marker based on worker calculation
-        // e.g., FlightMode.updatePositions(e.data);
-    };
-    */
-   
     console.log("🌍 XAERISOFT LIVE Initialized Successfully.");
 });
