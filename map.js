@@ -24,7 +24,13 @@ const MapEngine = {
         // Setup Layer Group per mode
         this.layers = {
             flight: L.layerGroup().addTo(this.map),
-            ship: L.layerGroup(),
+            // DIUBAH: Menggunakan markerClusterGroup khusus untuk layer kapal
+            ship: L.markerClusterGroup({
+                maxClusterRadius: 55,       // Radius piksel untuk menggabungkan kapal (semakin besar, makin rapi)
+                disableClusteringAtZoom: 12, // Di level zoom 12 ke atas, clustering dimatikan agar semua kapal terpisah
+                spiderfyOnMaxZoom: true,     // Memecah ikon yang koordinatnya sama persis saat di-klik
+                showCoverageOnHover: false   // Menonaktifkan efek poligon area sebaran saat kursor di atas cluster (UI lebih bersih)
+            }),
             weather: L.layerGroup()
         };
 

@@ -8,11 +8,8 @@ const ShipMode = {
     },
 
     loadShipData() {
-        // Karena API kapal laut (AIS) publik yang gratis sangat dibatasi/berbayar,
-        // Kita gunakan generator untuk mensimulasikan ratusan kapal di perairan
-        // Sambil menyiapkan arsitektur untuk API sungguhan.
-        
-        this.generateSimulatedFleet(250); // Munculkan 250 kapal secara acak
+        // Default: Buat 250 kapal simulasi[span_3](start_span)[span_3](end_span)
+        this.generateSimulatedFleet(250); 
         
         // 💡 JIKA ANDA SUDAH PUNYA API KEY (Misal dari Spire / MarineTraffic), nyalakan kode di bawah ini:
         // this.fetchRealShips(); 
@@ -21,28 +18,38 @@ const ShipMode = {
     async fetchRealShips() {
         try {
             console.log("[Ship] Mencoba mengambil data AIS asli...");
-            // Endpoint ini hanya contoh. Ganti dengan URL API dari provider berlangganan Anda.
             const response = await fetch('https://api.namaprovideranda.com/v1/vessels?limit=500'); 
             const data = await response.json();
             
             this.layer.clearLayers();
             this.vessels.clear();
 
+            // DIUBAH: Menggunakan sistem batch array agar hemat resource browser
+            const markersToCluster = [];
+
             data.forEach(ship => {
-                this.createMarker(ship);
+                const marker = this.createMarker(ship);
+                markersToCluster.push(marker);
             });
+
+            // Masukkan seluruh marker asli sekaligus ke cluster
+            this.layer.addLayers(markersToCluster);
+
         } catch (error) {
             console.warn("API Kapal tidak tersedia atau butuh API Key. Menggunakan armada simulasi.");
         }
     },
 
-    // 🌊 GENERATOR KAPAL PINTAR
+    // 🌊 GENERATOR KAPAL PINTAR (Dioptimalkan dengan Batch Rendering)
     generateSimulatedFleet(count) {
         this.layer.clearLayers();
         this.vessels.clear();
 
         const shipTypes = ['Cargo Vessel', 'Oil Tanker', 'Passenger Ship', 'Fishing', 'Yacht'];
         const destinations = ['Port of Tanjung Priok', 'Port of Singapore', 'Rotterdam', 'Shanghai', 'Sydney', 'Tokyo'];
+
+        // Tempat penyimpanan marker sementara sebelum dimasukkan ke layer
+        const markersToCluster = [];
 
         for (let i = 0; i < count; i++) {
             // Mengacak koordinat di sekitar laut Indonesia & Asia Tenggara
@@ -54,7 +61,8 @@ const ShipMode = {
             const type = shipTypes[Math.floor(Math.random() * shipTypes.length)];
             const dest = destinations[Math.floor(Math.random() * destinations.length)];
 
-            this.createMarker({
+            // Panggil createMarker dan simpan hasilnya ke array
+            const marker = this.createMarker({
                 mmsi: `999${Math.floor(Math.random() * 1000000)}`,
                 name: `VESSEL-${Math.floor(Math.random() * 9000) + 1000}`,
                 type: type,
@@ -65,7 +73,13 @@ const ShipMode = {
                 dest: dest,
                 eta: 'In Transit'
             });
+
+            markersToCluster.push(marker);
         }
+
+        // DIUBAH: Tambahkan semua marker simulasi sekaligus ke layer cluster
+        this.layer.addLayers(markersToCluster);
+
         console.log(`[Ship] Berhasil menyebar ${count} kapal di perairan.`);
     },
 
@@ -91,6 +105,9 @@ const ShipMode = {
         });
 
         this.vessels.set(data.mmsi, { marker, data });
-        marker.addTo(this.layer);
+
+        // DIUBAH: Marker tidak langsung di-addTo layer per satuan, melainkan di-return
+        // untuk kemudian diproses masal oleh .addLayers() di atas demi performa optimal.
+        return marker;
     }
 };
