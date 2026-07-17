@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XAERISOFT LIVE MAP - Enterprise Aviation & Marine Tracker</title>
+    <!-- Leaflet Engine CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Main Style -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="xaerisoft-universe">
+
+    <!-- Loading Skeleton Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loader-content">
+            <div class="pulse-glow"></div>
+            <h1>XAERISOFT</h1>
+            <p>Initializing Live Tracking Core...</p>
+            <div class="skeleton-bar-container"><div class="skeleton-bar-progress"></div></div>
+        </div>
+    </div>
+
+    <!-- Application Layout -->
+    <div class="app-container">
+        
+        <!-- Global Sidebar Panel -->
+        <aside class="sidebar-panel glassmorphism">
+            <div class="sidebar-header">
+                <div class="brand-logo">🌍</div>
+                <div class="brand-text">
+                    <h2>XAERISOFT</h2>
+                    <span>LIVE TRACKER SYSTEM</span>
+                </div>
+            </div>
+
+            <!-- Global Universal Search -->
+            <div class="search-container">
+                <input type="text" id="universal-search" placeholder="Search flight, ship, airport, port...">
+                <div id="search-results" class="search-results-dropdown glassmorphism hidden"></div>
+            </div>
+
+            <!-- Navigation Tabs System -->
+            <nav class="nav-tabs">
+                <button class="tab-btn active" data-tab="flight">✈ Flight Radar</button>
+                <button class="tab-btn" data-tab="ship">🚢 Ship Tracker</button>
+                <button class="tab-btn" data-tab="weather">🌦 Weather Radar</button>
+            </nav>
+
+            <!-- Dynamic Live Statistics Sidebar -->
+            <div class="sidebar-content">
+                <div class="stat-card">
+                    <span class="stat-label">Total Aircraft Live</span>
+                    <span id="stat-aircraft-count" class="stat-value text-neon-purple">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Total Ships Live</span>
+                    <span id="stat-ship-count" class="stat-value text-neon-cyan">0</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Active Weather Warnings</span>
+                    <span id="stat-weather-status" class="stat-value text-neon-amber">Nominal</span>
+                </div>
+                
+                <hr class="divider">
+
+                <div class="system-metrics">
+                    <div class="metric-row"><span>System Time:</span><span id="metric-time">00:00:00 UTC</span></div>
+                    <div class="metric-row"><span>Map Scale:</span><span id="metric-scale">-</span></div>
+                    <div class="metric-row"><span>Coordinates:</span><span id="metric-coordinates">0.0000, 0.0000</span></div>
+                </div>
+
+                <div class="favorites-section">
+                    <h3>⭐ Favorites</h3>
+                    <ul id="favorites-list" class="favorites-list">
+                        <li class="empty-fav">No favorites saved</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Map Area Container -->
+        <main class="map-wrapper">
+            <div id="main-map" class="fullscreen-map"></div>
+
+            <!-- Floating Controller Widgets -->
+            <div class="floating-controls top-right">
+                <!-- Base Layer Map Controller -->
+                <div class="control-group glassmorphism">
+                    <button id="btn-layer-dark" class="layer-btn active" title="Dark Map">🕶️</button>
+                    <button id="btn-layer-light" class="layer-btn" title="Light Map">☀️</button>
+                    <button id="btn-layer-sat" class="layer-btn" title="Satellite">🛰️</button>
+                    <button id="btn-layer-terrain" class="layer-btn" title="Terrain">🏔️</button>
+                </div>
+
+                <!-- Map Action Controls -->
+                <div class="control-group glassmorphism vertical">
+                    <button id="btn-locate" title="Current Location">📍</button>
+                    <button id="btn-measure" title="Measure Distance">📏</button>
+                    <button id="btn-fullscreen" title="Toggle Fullscreen">📺</button>
+                    <button id="btn-share" title="Share Viewport Location">🔗</button>
+                </div>
+            </div>
+
+            <!-- Weather Dynamic Legend Layer -->
+            <div id="weather-legend" class="weather-legend-card glassmorphism hidden">
+                <h4>Weather Density Overlay</h4>
+                <div class="legend-gradient"></div>
+                <div class="legend-labels">
+                    <span>Min/Low</span>
+                    <span>Moderate</span>
+                    <span>Extreme</span>
+                </div>
+                <div class="layer-toggles-grid">
+                    <label><input type="checkbox" id="layer-toggle-rain" checked> Rain / Precip</label>
+                    <label><input type="checkbox" id="layer-toggle-wind" checked> Wind Vectors</label>
+                    <label><input type="checkbox" id="layer-toggle-temp"> Temperature</label>
+                    <label><input type="checkbox" id="layer-toggle-pressure"> Isobar Pressure</label>
+                </div>
+            </div>
+
+            <!-- Floating Inspector Detail Card -->
+            <div id="inspector-card" class="inspector-card glassmorphism hidden">
+                <button id="close-inspector" class="close-btn">&times;</button>
+                <div id="inspector-content"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Leaflet Engine Core Logic Script -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    
+    <!-- Application Modular Architecture Files -->
+    <script src="map.js"></script>
+    <script src="flight.js"></script>
+    <script src="ship.js"></script>
+    <script src="weather.js"></script>
+    <script src="ui.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
