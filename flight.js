@@ -15,8 +15,8 @@ const FlightMode = {
         try {
             console.log("[Flight] Mencoba mengambil data Live Radar asli...");
             
-            // Mengambil data dari seluruh dunia sekaligus
-            const response = await fetch('https://opensky-network.org/api/states/all');
+            // Mengambil data khusus area Indonesia & ASEAN agar API gratis OpenSky tidak error (Tanpa API Key!)
+            const response = await fetch('https://opensky-network.org/api/states/all?lamin=-15&lomin=90&lamax=15&lomax=140');
             
             if (!response.ok) throw new Error('API OpenSky sedang limit/sibuk');
             
@@ -27,10 +27,7 @@ const FlightMode = {
                 this.aircrafts.clear();
                 const markersToCluster = [];
 
-                // Ambil maksimal 1000 pesawat biar HP nggak nge-lag (bisa ditambah kalau mau)
-                const limit = Math.min(data.states.length, 1000);
-
-                for (let i = 0; i < limit; i++) {
+                for (let i = 0; i < data.states.length; i++) {
                     const flight = data.states[i];
                     const lat = flight[6];
                     const lng = flight[5];
@@ -52,8 +49,9 @@ const FlightMode = {
                     }
                 }
                 
+                // Memasukkan array secara massal ke dalam sistem MarkerCluster
                 this.layer.addLayers(markersToCluster);
-                console.log(`[Flight] Berhasil memuat ${limit} pesawat asli.`);
+                console.log(`[Flight] Berhasil memuat ${markersToCluster.length} pesawat asli.`);
             }
         } catch (error) {
             console.warn("[Flight] OpenSky API menolak request karena rate-limit. Menjalankan radar global simulasi...");
@@ -62,7 +60,7 @@ const FlightMode = {
         }
     },
 
-    // 🌍 PENGGANTI SIMULASI 2 PESAWAT MENJADI SELURUH DUNIA
+    // 🌍 PENGGANTI JIKA INTERNET MATI / API SIBUK
     generateSimulatedGlobalFlights(count) {
         this.layer.clearLayers();
         this.aircrafts.clear();
@@ -118,6 +116,6 @@ const FlightMode = {
         });
 
         this.aircrafts.set(data.id, { marker, data });
-        return marker; // Tetap di-return biar bisa di-cluster dengan rapi!
+        return marker; // Harus di-return agar ditangkap oleh markersToCluster
     }
 };
