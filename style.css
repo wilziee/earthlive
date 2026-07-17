@@ -94,3 +94,28 @@ header {
 /* Custom Markers & UI Utils */
 .custom-marker { filter: drop-shadow(0 0 5px var(--neon-purple)); transition: transform 0.1s linear; }
 #fps-counter { position: absolute; bottom: 20px; left: 20px; z-index: 1000; padding: 5px 10px; font-size: 12px; }
+/* 📍 GPS Locator Pulse Animation */
+.user-gps-pulse {
+    width: 16px;
+    height: 16px;
+    background: var(--neon-purple);
+    border: 3px solid #ffffff;
+    border-radius: 50%;
+    box-shadow: 0 0 12px var(--neon-purple);
+    animation: gpsPulse 1.8s infinite ease-out;
+}
+
+@keyframes gpsPulse {
+    0% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(176, 38, 255, 0.7);
+    }
+    70% {
+        transform: scale(1.1);
+        box-shadow: 0 0 0 12px rgba(176, 38, 255, 0);
+    }
+    100% {
+        transform: scale(0.9);
+        box-shadow: 0 0 0 0 rgba(176, 38, 255, 0);
+    }
+}
